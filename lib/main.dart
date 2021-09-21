@@ -16,18 +16,25 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (ctx) => Auth(),)
       ],
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.purple,
-          accentColor: Colors.deepOrange,
-          fontFamily: 'Lato',
-          primaryTextTheme: TextTheme(
-            bodyText1: TextStyle(color: Colors.white) 
-          )
-    
+      child: Consumer<Auth>(
+        builder: (ctx, auth,_) => MaterialApp(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            primarySwatch: Colors.purple,
+            accentColor: Colors.deepOrange,
+            fontFamily: 'Lato',
+            primaryTextTheme: TextTheme(
+              bodyText1: TextStyle(color: Colors.white) 
+            )
+          
+          ),
+          home: FutureBuilder(
+            future: auth.isAuthenticated(),
+            builder: (ctx,authed) =>  authed.connectionState == ConnectionState.waiting
+            ? Text('Waiting')
+            : authed.data == true ? Text('You are authenticated ${authed.data}') : AuthScreen()
+          ) 
         ),
-        home: AuthScreen(),
       ),
     );
   }

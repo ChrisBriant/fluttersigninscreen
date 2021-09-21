@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 
+import 'package:jwt_decode/jwt_decode.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
@@ -8,10 +9,21 @@ import 'package:http/http.dart' as http;
 import '../models/http_exception.dart';
 
 class Auth with ChangeNotifier {
-  late String _token;
-  late DateTime _expiryDate;
-  late String _userId;
-  late Timer _authTimer;
+  //late String _token;
+  //late String _refresh;
+  //late DateTime _expiryDate;
+  //late String _userId;
+  //late Timer _authTimer;
+
+  static Future<void> _setToken(token,refresh,expiryDate) async {
+    final userData = json.encode({
+      'token' : token,
+      'refresh' : refresh,
+      'expiryDate' : expiryDate!.toIso8601String()
+    });
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('userData', userData);
+  }
 
   Future<void> _authenticate(String email, String password) async {
     final url = Uri.parse('https://authapi.chrisbriant.uk/api/account/authenticate/');
@@ -26,9 +38,32 @@ class Auth with ChangeNotifier {
       );
       final responseData = json.decode(res.body);
       print(responseData);
-      if(!responseData['success']) {
-        throw HttpException(responseData['message']);
+      if(responseData['success'] != null) {
+        if(!responseData['success']) {
+          throw HttpException(responseData['message']);
+        }
+      } else {
+        if(responseData['access'] != null) {
+          String token = responseData['access'];
+          String refresh = responseData['refresh'];
+          DateTime? expiryDate = Jwt.getExpiryDate(token);
+          //Store in shared prefs
+          // final userData = json.encode({
+          //   'token' : token,
+          //   'refresh' : refresh,
+          //   'expiryDate' : expiryDate!.toIso8601String()
+          // });
+          // final prefs = await SharedPreferences.getInstance();
+          // prefs.setString('userData', userData);
+          await _setToken(token, refresh, expiryDate);
+          print(expiryDate);
+          print(DateTime.now());
+          notifyListeners();
+        } else {
+          throw HttpException('Something went wrong tying to log on.');
+        }
       }
+
       // if (responseData['error'] != null) {
       //   throw HttpException(responseData['error']['message']);
       // }
@@ -47,6 +82,48 @@ class Auth with ChangeNotifier {
     } catch(err) {
       throw err;
     }
+  }
+
+  Future<bool> isAuthenticated() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    //prefs.remove('userData');
+
+    if(!prefs.containsKey('userData')) {
+      return false;
+    }
+
+    final extractedUserData = json.decode(prefs.getString('userData')!) as Map<String, dynamic>;
+    print(prefs.getString('userData'));
+    final DateTime expiryDate = DateTime.parse(extractedUserData['expiryDate'] as String);
+    final String refresh = extractedUserData['refresh'] as String; 
+    if(expiryDate.isBefore(DateTime.now())) {
+      print('Is before');
+      //Try refresh token
+      final url = Uri.parse('https://authapi.chrisbriant.uk/api/account/refresh/');
+      try {
+        final res = await http.post(
+          url, 
+          body: json.encode({
+            'refresh': refresh
+          }),
+          headers: {"Content-Type": "application/json"},
+        );
+        final responseData = json.decode(res.body);
+        if(responseData['access'] != null) {
+          //set the access token
+          await _setToken(responseData['access'], refresh, expiryDate);
+          //notifyListeners();
+          return true;
+        } else {
+          return false;
+        }
+      } catch(err) {
+        print(err);
+        return false;
+      }
+    }
+    return true;
   }
 
 
