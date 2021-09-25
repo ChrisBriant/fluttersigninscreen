@@ -9,11 +9,6 @@ import 'package:http/http.dart' as http;
 import '../models/http_exception.dart';
 
 class Auth with ChangeNotifier {
-  //late String _token;
-  //late String _refresh;
-  //late DateTime _expiryDate;
-  //late String _userId;
-  //late Timer _authTimer;
 
   static Future<void> _setToken(token,refresh,expiryDate) async {
     final userData = json.encode({
@@ -47,14 +42,6 @@ class Auth with ChangeNotifier {
           String token = responseData['access'];
           String refresh = responseData['refresh'];
           DateTime? expiryDate = Jwt.getExpiryDate(token);
-          //Store in shared prefs
-          // final userData = json.encode({
-          //   'token' : token,
-          //   'refresh' : refresh,
-          //   'expiryDate' : expiryDate!.toIso8601String()
-          // });
-          // final prefs = await SharedPreferences.getInstance();
-          // prefs.setString('userData', userData);
           await _setToken(token, refresh, expiryDate);
           print(expiryDate);
           print(DateTime.now());
@@ -63,22 +50,6 @@ class Auth with ChangeNotifier {
           throw HttpException('Something went wrong tying to log on.');
         }
       }
-
-      // if (responseData['error'] != null) {
-      //   throw HttpException(responseData['error']['message']);
-      // }
-      // _token = responseData['idToken'];
-      // _userId = responseData['localId'];
-      // _expiryDate = DateTime.now().add(Duration(seconds: int.parse(responseData['expiresIn'])));
-      // //_autoLogout();
-      // notifyListeners();
-      // final prefs = await SharedPreferences.getInstance();
-      // final userData = json.encode({
-      //   'token' : _token,
-      //   'userId' : _userId,
-      //   'expiryDate' : _expiryDate.toIso8601String()
-      // });
-      // prefs.setString('userData', userData);
     } catch(err) {
       throw err;
     }
@@ -149,6 +120,16 @@ class Auth with ChangeNotifier {
 
   Future<void> signin(String email,String password) async {
     return _authenticate(email, password);
+  }
+
+  Future<void> signout() async {
+    //Destroy the token if it exists
+    final prefs = await SharedPreferences.getInstance();
+
+    if(prefs.containsKey('userData')) {
+      prefs.remove('userData');
+    }
+    notifyListeners();
   }
 
 

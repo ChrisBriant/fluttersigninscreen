@@ -101,6 +101,7 @@ class _AuthCardState extends State<AuthCard>
   Map<String, String>_authData = {
     'email': '',
     'password': '',
+    'passchk' : '',
   };
   var _isLoading = false;
   final _passwordController = TextEditingController();
@@ -287,6 +288,9 @@ class _AuthCardState extends State<AuthCard>
                                 }
                               }
                             : null,
+                        onSaved: (value) {
+                          _authData['passchk'] = value!;
+                        },
                       ),
                     ),
                   ),

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth.dart';
 
 class AuthenticatedScreen extends StatelessWidget {
 
@@ -17,6 +20,11 @@ class AuthenticatedScreen extends StatelessWidget {
               style: TextStyle(fontSize: 25),
             ),
           ),
+          SizedBox(height: 10,),
+          ElevatedButton(
+            onPressed: Provider.of<Auth>(context, listen: false).signout, 
+            //onPressed: () {},
+            child: Text('Log Out', style: TextStyle(fontSize: 20),))
         ]
       ),
       
