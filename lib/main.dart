@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import './screens/auth_screen.dart';
 import './providers/auth.dart';
+import './screens/authenticated_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -32,7 +33,7 @@ class MyApp extends StatelessWidget {
             future: auth.isAuthenticated(),
             builder: (ctx,authed) =>  authed.connectionState == ConnectionState.waiting
             ? Text('Waiting')
-            : authed.data == true ? Text('You are authenticated ${authed.data}') : AuthScreen()
+            : authed.data == true ? AuthenticatedScreen() : AuthScreen()
           ) 
         ),
       ),

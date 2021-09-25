@@ -128,7 +128,23 @@ class Auth with ChangeNotifier {
 
 
   Future<void> signup(String email,String password) async {
-    return _authenticate(email, password);
+    //TODO: Add the proper url and make the register call
+    final url = Uri.parse('https://authapi.chrisbriant.uk/api/account/register/');
+    try {
+      final res = await http.post(
+        url, 
+        body: json.encode({
+          'email' : email,
+          'password' : password,
+          'passchk' : 'SillyPassword1!'
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+      final responseData = json.decode(res.body);
+      print(responseData);
+    } catch(err) {
+      print(err);
+    }
   }
 
   Future<void> signin(String email,String password) async {
