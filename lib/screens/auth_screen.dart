@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:auth_example/screens/signup_complete_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -102,6 +103,7 @@ class _AuthCardState extends State<AuthCard>
     'email': '',
     'password': '',
     'passchk' : '',
+    'username' : '',
   };
   var _isLoading = false;
   final _passwordController = TextEditingController();
@@ -136,6 +138,17 @@ class _AuthCardState extends State<AuthCard>
       ),
     );
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    print('I changed dependancies');
+    if(Provider.of<Auth>(context, listen: false).justSignedUp) {
+      _authMode = AuthMode.Login;
+      Provider.of<Auth>(context, listen: false).resetSignUpStatus();
+    } 
+  }
+
 
   @override
   void dispose() {
@@ -178,11 +191,18 @@ class _AuthCardState extends State<AuthCard>
           _authData['password']!,
         );
       } else {
-        // Sign user up
-        // await Provider.of<Auth>(context, listen: false).signup(
-        //   _authData['email'],
-        //   _authData['password'],
-        // );
+        //Sign user up
+        bool _success = false;
+        _success = await Provider.of<Auth>(context, listen: false).signup(
+          _authData['email']!,
+          _authData['password']!,
+          _authData['passchk']!,
+          _authData['username']!,
+        );
+
+        if(_success) {
+          Navigator.of(context).pushNamed(SignupCompleteScreen.routeName);
+        }
       }
     } on HttpException catch (error) {
       var errorMessage = 'Authentication failed';
@@ -232,7 +252,7 @@ class _AuthCardState extends State<AuthCard>
         height: _authMode == AuthMode.Signup ? 320 : 260,
         // height: _heightAnimation.value.height,
         constraints:
-            BoxConstraints(minHeight: _authMode == AuthMode.Signup ? 320 : 260),
+            BoxConstraints(minHeight: _authMode == AuthMode.Signup ? 380 : 260),
         width: deviceSize.width * 0.75,
         padding: EdgeInsets.all(16.0),
         child: Form(
@@ -240,6 +260,36 @@ class _AuthCardState extends State<AuthCard>
           child: SingleChildScrollView(
             child: Column(
               children: <Widget>[
+                AnimatedContainer(
+                  constraints: BoxConstraints(
+                    minHeight: _authMode == AuthMode.Signup ? 60 : 0,
+                    maxHeight: _authMode == AuthMode.Signup ? 120 : 0,
+                  ),
+                  duration: Duration(milliseconds: 300),
+                  curve: Curves.easeIn,
+                  child: FadeTransition(
+                    opacity: _opacityAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: TextFormField(
+                        enabled: _authMode == AuthMode.Signup,
+                        decoration:
+                            InputDecoration(labelText: 'User Name'),
+                        obscureText: false,
+                        validator: _authMode == AuthMode.Signup
+                            ? (value) {
+                                if (value!.length < 4) {
+                                  return 'Please choose a user name of four or more characters.';
+                                }
+                              }
+                            : null,
+                        onSaved: (value) {
+                          _authData['username'] = value!;
+                        },
+                      ),
+                    ),
+                  ),
+                ),
                 TextFormField(
                   decoration: InputDecoration(labelText: 'E-Mail'),
                   keyboardType: TextInputType.emailAddress,

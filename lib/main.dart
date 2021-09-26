@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import './screens/auth_screen.dart';
 import './providers/auth.dart';
 import './screens/authenticated_screen.dart';
+import './screens/signup_complete_screen.dart';
+import './screens/wait_screen.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -32,9 +35,13 @@ class MyApp extends StatelessWidget {
           home: FutureBuilder(
             future: auth.isAuthenticated(),
             builder: (ctx,authed) =>  authed.connectionState == ConnectionState.waiting
-            ? Text('Waiting')
+            ? WaitScreen()
             : authed.data == true ? AuthenticatedScreen() : AuthScreen()
-          ) 
+          ),
+          routes: {
+            SignupCompleteScreen.routeName : (ctx) => SignupCompleteScreen(),
+            AuthScreen.routeName : (ctx) => AuthScreen(),
+          }, 
         ),
       ),
     );

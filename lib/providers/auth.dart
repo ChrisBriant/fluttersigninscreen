@@ -9,6 +9,16 @@ import 'package:http/http.dart' as http;
 import '../models/http_exception.dart';
 
 class Auth with ChangeNotifier {
+  bool _justSignedUp = false;
+
+  //Get information on signed up status
+  bool get justSignedUp {
+    return _justSignedUp;
+  }
+
+  void resetSignUpStatus() {
+    _justSignedUp = false;
+  }
 
   static Future<void> _setToken(token,refresh,expiryDate) async {
     final userData = json.encode({
@@ -98,23 +108,31 @@ class Auth with ChangeNotifier {
   }
 
 
-  Future<void> signup(String email,String password) async {
-    //TODO: Add the proper url and make the register call
+  Future<bool> signup(String email,String password,String passchk,String username) async {
     final url = Uri.parse('https://authapi.chrisbriant.uk/api/account/register/');
     try {
       final res = await http.post(
         url, 
         body: json.encode({
+          'username' : username,
           'email' : email,
           'password' : password,
-          'passchk' : 'SillyPassword1!'
+          'passchk' : passchk
         }),
         headers: {'Content-Type': 'application/json'},
       );
       final responseData = json.decode(res.body);
       print(responseData);
+      if(!responseData['success']) {
+        print('Here');
+        throw HttpException(responseData['message']);
+      } else {
+        //Sign up successfull
+        _justSignedUp = true;
+        return true;
+      }
     } catch(err) {
-      print(err);
+      throw HttpException(err.toString());
     }
   }
 
@@ -123,6 +141,7 @@ class Auth with ChangeNotifier {
   }
 
   Future<void> signout() async {
+    print('Signing Out');
     //Destroy the token if it exists
     final prefs = await SharedPreferences.getInstance();
 
