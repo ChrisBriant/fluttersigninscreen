@@ -23,7 +23,6 @@ class AuthenticatedScreen extends StatelessWidget {
           SizedBox(height: 10,),
           ElevatedButton(
             onPressed: () { Provider.of<Auth>(context, listen: false).signout(); }, 
-            //onPressed: () { print('hello');},
             child: Text('Log Out', style: TextStyle(fontSize: 20),))
         ]
       ),

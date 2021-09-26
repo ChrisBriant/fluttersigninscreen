@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import 'package:auth_example/screens/signup_complete_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth.dart';
 import '../models/http_exception.dart';
+import '../screens/signup_complete_screen.dart';
 
 enum AuthMode { Signup, Login }
 
@@ -15,10 +15,8 @@ class AuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
-    // final transformConfig = Matrix4.rotationZ(-8 * pi / 180);
-    // transformConfig.translate(-10.0);
+
     return Scaffold(
-      // resizeToAvoidBottomInset: false,
       body: Stack(
         children: <Widget>[
           Container(
@@ -49,7 +47,6 @@ class AuthScreen extends StatelessWidget {
                           EdgeInsets.symmetric(vertical: 8.0, horizontal: 94.0),
                       transform: Matrix4.rotationZ(-4 * pi / 180)
                         ..translate(-10.0),
-                      // ..translate(-10.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         color: Colors.deepOrange.shade900,
@@ -111,8 +108,6 @@ class _AuthCardState extends State<AuthCard>
   late Animation<Offset> _slideAnimation;
   late Animation<double> _opacityAnimation;
   
-
-
   @override
   void initState() {
     super.initState();
@@ -142,7 +137,6 @@ class _AuthCardState extends State<AuthCard>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    print('I changed dependancies');
     if(Provider.of<Auth>(context, listen: false).justSignedUp) {
       _authMode = AuthMode.Login;
       Provider.of<Auth>(context, listen: false).resetSignUpStatus();
@@ -206,14 +200,12 @@ class _AuthCardState extends State<AuthCard>
       }
     } on HttpException catch (error) {
       var errorMessage = 'Authentication failed';
-      print(error);
       errorMessage = error.toString();
       if (error.toString().contains('EMAIL_EXISTS')) {
         errorMessage = 'This email address is already in use.';
       }
       _showErrorDialog(errorMessage);
     } catch (error) {
-      print(error);
       const errorMessage =
           'Could not authenticate you. Please try again later.';
       _showErrorDialog(errorMessage);
@@ -250,7 +242,6 @@ class _AuthCardState extends State<AuthCard>
         duration: Duration(milliseconds: 300),
         curve: Curves.easeIn,
         height: _authMode == AuthMode.Signup ? 320 : 260,
-        // height: _heightAnimation.value.height,
         constraints:
             BoxConstraints(minHeight: _authMode == AuthMode.Signup ? 380 : 260),
         width: deviceSize.width * 0.75,
@@ -357,14 +348,10 @@ class _AuthCardState extends State<AuthCard>
                     onPressed: _submit,
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 8.0),
-                      //primary: Theme.of(context).primaryColor,
                       primary: Theme.of(context).primaryTextTheme.bodyText1!.color,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      //textStyle: TextStyle(color:Theme.of(context).primaryTextTheme.bodyText1!.color, )
-                      //textStyle: TextStyle(color:Colors.white),
-                      //materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     )
                   ),
                   TextButton(
@@ -374,7 +361,6 @@ class _AuthCardState extends State<AuthCard>
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 4),
                       primary: Theme.of(context).primaryColor,
-                      //materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     )
                   ),
               ],
